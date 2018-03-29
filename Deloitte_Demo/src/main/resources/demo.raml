@@ -1,0 +1,86 @@
+#%RAML 1.0
+baseUri: https://mocksvc.mulesoft.com/mocks/e864bfe3-85c3-4e82-803e-6626f00e7f79 # 
+title: API Dummy
+version: 1.0
+
+/accounts:
+  get:
+    queryParameters: 
+      
+    responses:  
+      200:
+        body: 
+          application/json:
+            example:
+              [{ "Description": "Test account 1", "Phone": "+56 9 9999 9999", "ShippingAddress": { "country": "Santiago Chile", "city": "Santiago Chile", "countryCode": null, "street": "Santiago Chile", "latitude": null, "postalCode": null, "geocodeAccuracy": null, "stateCode": null, "state": null, "longitude": null }, "Website": "testdemo.com", "Id": "0016A00000ADsM5QAL", "type": "Account", "Name": "Test Account 1" },{ "Description": "Test account 1", "Phone": "+56 9 9999 9999", "ShippingAddress": { "country": "Santiago Chile", "city": "Santiago Chile", "countryCode": null, "street": "Santiago Chile", "latitude": null, "postalCode": null, "geocodeAccuracy": null, "stateCode": null, "state": null, "longitude": null }, "Website": "testdemo.com", "Id": "0016A00000ADsM5QAL", "type": "Account", "Name": "Test Account 1" }] 
+  
+  
+  post:
+    description:  Create an account
+    body: 
+      application/json:
+        example:
+          { "Description": "Test account 1", "Phone": "+56 9 9999 9999", "ShippingAddress": { "country": "Santiago Chile", "city": "Santiago Chile", "countryCode": null, "street": "Santiago Chile", "latitude": null, "postalCode": null, "geocodeAccuracy": null, "stateCode": null, "state": null, "longitude": null }, "Website": "testdemo.com", "Id": "0016A00000ADsM5QAL", "type": "Account", "Name": "Test Account 1" }
+
+  /{id}:
+    get:
+      queryParameters: 
+
+      responses: 
+        200:
+          body: 
+            application/json:
+              example:
+               [{ "Description": "Test account 1", "Phone": "+56 9 9999 9999", "ShippingAddress": { "country": "Santiago Chile", "city": "Santiago Chile", "countryCode": null, "street": "Santiago Chile", "latitude": null, "postalCode": null, "geocodeAccuracy": null, "stateCode": null, "state": null, "longitude": null }, "Website": "testdemo.com", "Id": "0016A00000ADsM5QAL", "type": "Account", "Name": "Test Account 1" },{ "Description": "Test account 1", "Phone": "+56 9 9999 9999", "ShippingAddress": { "country": "Santiago Chile", "city": "Santiago Chile", "countryCode": null, "street": "Santiago Chile", "latitude": null, "postalCode": null, "geocodeAccuracy": null, "stateCode": null, "state": null, "longitude": null }, "Website": "testdemo.com", "Id": "0016A00000ADsM5QAL", "type": "Account", "Name": "Test Account 1" }] 
+
+/products:
+  get:
+    responses: 
+      200:
+       body: 
+          application/json:
+            example: [{ "productCode": "GC1040", "name": "GenWatt Diesel 200kW", "CreatedDate": "2018-03-22T03:53:08.000Z", "description":  null },{ "productCode": "GC1040", "name": "GenWatt Diesel 200kW", "CreatedDate": "2018-03-22T03:53:08.000Z", "description": null }]
+
+  post:
+    description:  Create a product
+    body: 
+      application/json:
+        example: { "productCode": "GC1040", "name": "GenWatt Diesel 200kW", "CreatedDate": "2018-03-22T03:53:08.000Z", "description":  null }
+    responses: 
+      201:
+        body: 
+          application/json:
+            examples: 
+            
+      
+  /{id}:
+    get:
+      responses: 
+        200:
+          body: 
+            application/json:
+              example: [{ "productCode": "GC1040", "name": "GenWatt Diesel 200kW", "CreatedDate": "2018-03-22T03:53:08.000Z", "description":  null },{ "productCode": "GC1040", "name": "GenWatt Diesel 200kW", "CreatedDate": "2018-03-22T03:53:08.000Z", "description": null }]
+
+/opportunity:
+  get:
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: [ { "close_date": "2016-02-29", "id": "0066A000004l4aiQAA", "Name": "Dickenson Mobile Generators", "propability": "10.0", "stage": "Qualification" }, { "close_date": "2016-02-29", "id": "0066A000004l4ajQAA", "Name": "United Oil Office Portable Generators", "propability": "90.0", "stage": "Negotiation/Review" }]
+
+  post:
+    description:  Create an opportunity
+    body: 
+      application/json:
+        example:   [ { "close_date": "2016-02-29", "id": "0066A000004l4aiQAA", "Name": "Dickenson Mobile Generators", "propability": "10.0", "stage": "Qualification" }, { "close_date": "2016-02-29", "id": "0066A000004l4ajQAA", "Name": "United Oil Office Portable Generators", "propability": "90.0", "stage": "Negotiation/Review" }]
+
+
+  /{id}:
+     get:
+      responses: 
+          200:
+            body: 
+                application/json:
+                  example: [ { "close_date": "2016-02-29", "id": "0066A000004l4aiQAA", "Name": "Dickenson Mobile Generators", "propability": "10.0", "stage": "Qualification" }, { "close_date": "2016-02-29", "id": "0066A000004l4ajQAA", "Name": "United Oil Office Portable Generators", "propability": "90.0", "stage": "Negotiation/Review" }]
+                  

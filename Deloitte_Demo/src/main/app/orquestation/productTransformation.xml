@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    
+    
+    <flow name="productTransformationFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration_Transf" path="/products" doc:name="HTTP" allowedMethods="GET, POST"/>
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/services/products" method="GET" doc:name="HTTP"/>
+    </flow>
+     <flow name="productByIdTransformationFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration_Transf" path="/products/{id}" doc:name="HTTP" allowedMethods="GET, POST"/>
+        <set-variable variableName="idprod" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="/services/products/{idprod}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="idprod" value="#[flowVars.idprod]"/>
+            </http:request-builder>
+        </http:request>
+    </flow>
+</mule>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="demo-httpListenerConfig" host="0.0.0.0" port="5560" doc:name="HTTP Listener Configuration"/>
+    <apikit:config name="demo-config" raml="demo.raml" consoleEnabled="false" doc:name="Router" keepRamlBaseUri="false"/>
+    <apikit:config name="Router" raml="demo.raml" consoleEnabled="false" consolePath="console" keepRamlBaseUri="false" doc:name="Router"/>
+    <flow name="demo-main">
+        <http:listener config-ref="demo-httpListenerConfig" path="/interface/*" doc:name="HTTP"/>
+        <apikit:router config-ref="demo-config" doc:name="APIkit Router"/>
+        <exception-strategy ref="Global_Exception_Strategy" doc:name="Reference Exception Strategy"/>
+    </flow>
+    <flow name="demo-console">
+        <http:listener config-ref="demo-httpListenerConfig" path="/console/*" doc:name="HTTP"/>
+        <apikit:console config-ref="demo-config" doc:name="APIkit Console"/>
+    </flow>
+    <flow name="get:/accounts:demo-config">
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/accounts" method="GET" doc:name="HTTP"/>
+       
+    </flow>
+    <flow name="get:/accounts/{id}:demo-config">
+        <set-variable variableName="idacct" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/accounts/{id}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="id" value="#[flowVars.idacct]"/>
+
+            </http:request-builder>
+        </http:request>
+       
+    </flow>
+    <flow name="get:/opportunity/{id}:demo-config">
+        <set-variable variableName="idopp" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/opportunity/{idopp}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="idopp" value="#[message.inboundProperties.'http.uri.params'.id]"/>
+
+            </http:request-builder>
+        </http:request>
+    </flow>
+    <flow name="get:/products/{id}:demo-config">
+        <set-variable variableName="idprod" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="Variable"/>
+        <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/products/{idprod}" method="GET" doc:name="HTTP">
+            <http:request-builder>
+                <http:uri-param paramName="idprod" value="#[message.inboundProperties.'http.uri.params'.id]"/>
+            </http:request-builder>
+        </http:request>
+    </flow>
+    <flow name="get:/opportunity:demo-config">
+         <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/opportunity" method="GET" doc:name="HTTP"/>
+    </flow>
+    <flow name="get:/products:demo-config">
+         <set-property propertyName="http.method" value="#[flowVars['method.override']]" doc:name="Property"/>
+        <http:request config-ref="HTTP_Request_Configuration_Orch" path="/transf/products" method="GET" doc:name="HTTP"/> 
+    </flow>
+    <flow name="post:/accounts:demo-config">
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload"/>
+    </flow>
+    <flow name="post:/opportunity:demo-config">
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload"/>
+    </flow>
+    <flow name="post:/products:demo-config">
+        <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+        <set-payload value="#[NullPayload.getInstance()]" doc:name="Set Payload"/>
+    </flow>
+
+</mule>

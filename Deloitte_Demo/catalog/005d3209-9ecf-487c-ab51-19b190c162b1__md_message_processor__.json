@@ -1,0 +1,11 @@
+{
+    "inputMessageMetadata": {},
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "opportunityResponse"
+        }
+    },
+    "id": "005d3209-9ecf-487c-ab51-19b190c162b1",
+    "version": "5.2.0.0"
+}

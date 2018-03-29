@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    
+    <flow name="getProductsService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/products" allowedMethods="GET" doc:name="HTTP"/>
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT Id,CreatedDate,Description,Name,ProductCode FROM Product2" doc:name="Salesforce"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+
+%output application/json
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	productCode: payload01.ProductCode,
+	name: payload01.Name,
+	CreatedDate: payload01.CreatedDate as :string,
+	description: payload01.Description,
+	id: payload01.Id
+
+})]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="postProductsService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/products" allowedMethods="POST" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="e7bfab46-c9e2-4f7a-a39f-5a5efc705f13">
+            <dw:input-payload mimeType="application/json" doc:sample="C:\Users\jhtorres\Desktop\demoDeloitte\jsondefinitions\prodPostReq.json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+[{
+	Id: payload.product_id,
+	Name: payload.name,
+	Description: payload.description
+}]]]></dw:set-payload>
+        </dw:transform-message>
+        <sfdc:update config-ref="Salesforce__Basic_Authentication" type="Product2" doc:name="Salesforce">
+            <sfdc:objects>
+                <sfdc:object>
+                    <sfdc:inner-object key="Description">#[payload.get(0).get(&quot;Description&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Name">#[payload.get(0).get(&quot;name&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Id">#[payload.get(0).get(&quot;Id&quot;)]</sfdc:inner-object>
+                </sfdc:object>
+            </sfdc:objects>
+        </sfdc:update>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

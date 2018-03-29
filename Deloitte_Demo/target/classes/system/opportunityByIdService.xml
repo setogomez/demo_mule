@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <flow name="getOpportunityByIDService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/opportunity/{id}" doc:name="HTTP" allowedMethods="GET"/>
+       <set-variable variableName="id" value="#[message.inboundProperties.'http.uri.params'.id]" doc:name="id"/>
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT CloseDate,Id,LeadSource,Name,Probability,StageName FROM Opportunity WHERE Id = '#[flowVars.id]'" doc:name="Salesforce"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="d86f1d22-0d43-43e6-afe6-c91203bb45bd">
+            <dw:input-payload mimeType="application/java"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	close_date: payload01.CloseDate as :string,
+	id: payload01.Id,
+	Name: payload01.Name,
+	propability: payload01.Probability,
+	stage: payload01.StageName as :string
+})]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+</mule>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <flow name="getOpportunityService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/opportunity" doc:name="HTTP" allowedMethods="GET"/>
+        <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT AccountId,CloseDate,Id,LeadSource,Name,Probability,StageName FROM Opportunity" doc:name="Salesforce"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="005d3209-9ecf-487c-ab51-19b190c162b1">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	close_date: payload01.CloseDate as :string,
+	id: payload01.Id,
+	Name: payload01.Name,
+	propability: payload01.Probability,
+	stage: payload01.StageName as :string
+})
+]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+	<flow name="postOpportunityService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/opportunity" allowedMethods="POST" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="26cdd8a1-fd4a-44b8-8f90-64ea40289907">
+            <dw:input-payload mimeType="application/json" doc:sample="C:\Users\jhtorres\Desktop\demoDeloitte\jsondefinitions\optPostReq.json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.opportunity map ((opportunity , indexOfOpportunity) -> {
+	Id: opportunity.opt_id,
+	Name: opportunity.name,
+	StageName: opportunity.stage,
+	Probability: opportunity.probability
+})]]></dw:set-payload>
+        </dw:transform-message>
+        <sfdc:update config-ref="Salesforce__Basic_Authentication" type="Opportunity" doc:name="Salesforce">
+            <sfdc:objects>
+                <sfdc:object>
+                    <sfdc:inner-object key="Name">#[payload.get(0).get(&quot;Name&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="StageName">#[payload.get(0).get(&quot;StageName&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Id">#[payload.get(0).get(&quot;Id&quot;)]</sfdc:inner-object>
+                </sfdc:object>
+            </sfdc:objects>
+        </sfdc:update>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>

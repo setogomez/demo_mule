@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd">
+    
+    <flow name="getAccountsService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/accounts" allowedMethods="GET" doc:name="HTTP"/>
+      <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:select Id, Name, Description, Phone, ShippingAddress , Website from Account" doc:name="All Accounts"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+    </flow>
+       <flow name="postAccountService">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/accounts" allowedMethods="POST" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="60fc37af-646b-4bb1-8296-565992f9f80c">
+            <dw:input-payload doc:sample="C:\Users\jhtorres\Desktop\demoDeloitte\requestDemoAcct.json" mimeType="application/json"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.accounts map ((account , indexOfAccount) -> {
+	Id: account.AcctId,
+	Name: account.Name,
+	Type: account.type,
+	ShippingStreet: account.ShippingStreet,
+	ShippingCity: account.ShippingCity,
+	ShippingLatitude: account.ShippingLatitude as :number,
+	ShippingLongitude: account.ShippingLongitude as :number,
+	ShippingGeocodeAccuracy: account.ShippingGeocodeAccuracy,
+	Phone: account.Phone,
+	Fax: account.Fax,
+	AccountNumber: account.AcctNumber,
+	Website: account.Website,
+	Description: account.Description
+})]]></dw:set-payload>
+        </dw:transform-message>
+        <sfdc:update config-ref="Salesforce__Basic_Authentication" type="Account" doc:name="Salesforce">
+            <sfdc:objects>
+                <sfdc:object>
+                    <sfdc:inner-object key="ShippingLatitude">#[payload.get(0).get(&quot;ShippingLatitude&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Name">#[payload.get(0).get(&quot;name&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Id">#[payload.get(0).get(&quot;Id&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Description">#[payload.get(0).get(&quot;Description&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Website">#[payload.get(0).get(&quot;Website&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="Type">#[payload.get(0).get(&quot;type&quot;)]</sfdc:inner-object>
+                    <sfdc:inner-object key="ShippingLongitude">#[payload.get(0).get(&quot;ShippingLongitude&quot;)]</sfdc:inner-object>
+                </sfdc:object>
+            </sfdc:objects>
+        </sfdc:update>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>
